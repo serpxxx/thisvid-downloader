@@ -1,82 +1,341 @@
-# ThisVid Downloader — Save Videos as MP4, One Click, Any Quality
+# ThisVid Downloader Browser Extension (Chrome, Firefox, Edge, Opera, Brave)
 
-Download videos from ThisVid.com directly from your browser. ThisVid Downloader places a download button right on the video player, detects all available quality options, and saves videos as standard MP4 files to your computer. No extra software, no command line, no hassle.
 
-**Product page:** [https://serp.ly/thisvid-downloader](https://serp.ly/thisvid-downloader)<br>
-**Help center:** [https://help.serp.co/en/](https://help.serp.co/en/)<br>
-**Latest release:** [https://github.com/serpapps/thisvid-downloader/releases/latest](https://github.com/serpapps/thisvid-downloader/releases/latest)
+## Related
 
-## Why ThisVid Downloader
+---
+<details>
+<summary>
+  Research
+</summary>
+# How to Download ThisVid Videos: Technical Analysis of Stream Patterns, CDNs, and Download Methods
+*A comprehensive research document analyzing ThisVid's video infrastructure, embed patterns, stream formats, and optimal download strategies using modern tools*
+**Authors**: SERP Apps  
+**Date**: December 2025  
+**Version**: 1.0
+---
+- [ThisVid Downloader gist](https://gist.github.com/devinschumacher/2cac2a3e05eef4985aa55deaea4d2c99)
+## Abstract
 
-ThisVid uses streaming technology that prevents you from simply right-clicking and saving a video. Video URLs are buried inside page variables and dynamic network requests, making them nearly impossible to grab manually. Most generic download tools fail to detect ThisVid streams at all. This extension was purpose-built for ThisVid.com, so it catches every stream automatically and lets you focus on one thing: clicking download.
+This research document provides a technical overview of ThisVid's video delivery pipeline, including KVS-style player configuration, HLS/MP4 assets, and CDN request patterns used for playback and downloads.
 
-## Key features
+## Table of Contents
 
-- In-page download button built directly into the ThisVid video player
-- Automatic video detection from page variables and network requests
-- Quality selector showing all available resolutions, sorted highest first
-- Saves every video as a standard MP4 file
-- Real-time download progress with speed and file size indicators
-- Right-click context menu for instant downloads
-- Desktop notifications when downloads finish
-- Auto-saves to an organized ThisVid subfolder in your Downloads directory
-- Dark-themed UI with sky blue accents — clean and unobtrusive
+1. [Introduction](#1-introduction)
+2. [ThisVid Video Infrastructure Overview](#2-thisvid-video-infrastructure-overview)
+3. [URL Patterns and Detection](#3-url-patterns-and-detection)
+4. [Stream Formats and CDN Analysis](#4-stream-formats-and-cdn-analysis)
+5. [yt-dlp Implementation Strategies](#5-yt-dlp-implementation-strategies)
+6. [FFmpeg Processing Techniques](#6-ffmpeg-processing-techniques)
+7. [Alternative Tools and Backup Methods](#7-alternative-tools-and-backup-methods)
+8. [ThisVid API Integration](#8-thisvid-api-integration)
+9. [Implementation Recommendations](#9-implementation-recommendations)
+10. [Troubleshooting and Edge Cases](#10-troubleshooting-and-edge-cases)
+11. [Conclusion](#11-conclusion)
 
-## How it works
+---
 
-1. **Install** the extension in your browser
-2. **Play** any video on ThisVid.com
-3. **Click** the download button on the player, the extension icon, or right-click and choose "Download ThisVid Video"
-4. **Choose quality** and hit Download — the video saves as MP4 to your Downloads/ThisVid folder
+## 1. Introduction
 
-## Supported formats
+ThisVid is a video hosting site that commonly uses a KVS-style player configuration with MP4 and HLS variants. The site exposes direct media URLs in player configuration blocks or inline JavaScript, which can be extracted and downloaded with standard tooling.
 
-All downloads are saved as standard MP4 files that play on any device or media player. The extension detects every available resolution from the source and lists them by quality, with the highest option first. Streaming content is automatically converted to MP4 during download.
+### 1.1 Research Scope
 
-## Who it's for
+- ThisVid watch pages and embed endpoints
+- Player configuration payloads (flashvars, JSON, or inline scripts)
+- HLS manifests and MP4 direct file URLs
+- Common CDN hostnames and URL query patterns
 
-- ThisVid users who want to save videos for offline viewing
-- Anyone who prefers a simple browser-based solution over desktop apps or command-line tools
-- Users who want to pick their preferred resolution before downloading
+### 1.2 Methodology
 
-## Common use cases
+- Inspect player initialization scripts for video_url, hls, and file keys
+- Capture network requests while playback starts
+- Validate URLs with yt-dlp and ffprobe
+- Document stream variants by quality and codec
 
-- Save a ThisVid video for offline viewing on any device
-- Download in your preferred quality from all available resolutions
-- Build a personal video library with organized folder storage
-- Use the in-page player button for one-click downloads without opening the popup
-- Right-click any video to download via the context menu
+---
 
-## Trial & access
+## 2. ThisVid Video Infrastructure Overview
 
-Sign in with your email to unlock 3 free trial downloads. No credit card required. When you are ready for unlimited downloads, purchase a license at [serp.ly/thisvid-downloader](https://serp.ly/thisvid-downloader).
+### 2.1 Video Hosting Types
 
-Supported browsers: Chrome, Edge, Brave, Opera, Firefox, Whale, and Yandex.
+- Direct MP4 files hosted on CDN
+- HLS streams exposed via m3u8 playlists
+- Thumbnail and preview assets hosted on static subdomains
 
-## FAQ
+### 2.2 CDN Architecture
 
-**How do I download a video**
-Go to any video page on ThisVid.com, press play, then click the download button on the player, click the extension icon, or right-click and select "Download ThisVid Video."
+- Primary site domain: thisvid.com
+- CDN patterns: cdn.thisvid.com, s1.thisvid.com, s2.thisvid.com
+- KVS get_file endpoint as the gateway to media assets
 
-**What quality options are available**
-The extension detects all available qualities from the source, typically multiple resolutions. Options are sorted by quality with the highest listed first, and MP4 is always preferred.
+### 2.3 Video Processing Pipeline
 
-**What format are downloaded videos**
-All videos are saved as standard MP4 files. Streaming content is automatically converted to MP4 during download, so every file plays on any device or media player.
+1. User loads watch page
+2. Player script assembles flashvars / JSON config
+3. video_url or hls_url is resolved via get_file
+4. Client requests MP4 or m3u8 from CDN
 
-**Where are my downloads saved**
-Videos automatically save to a ThisVid subfolder inside your browser's default Downloads directory, keeping everything organized.
+### 2.4 Access Control and Authentication
 
-**Why isn't the extension finding my video**
-Press play on the video first. The extension needs the stream to start before detection works. If the issue persists, refresh the page and try again.
+- Most public videos are accessible without auth
+- Some videos require session cookies or age gate confirmation
+- Signed URLs may expire; capture fresh URLs near download time
 
-**Is my data safe**
-Yes. All video processing happens entirely in your browser. Authentication uses secure OTP verification with no passwords stored.
+---
 
-## Notes
+## 3. URL Patterns and Detection
 
-Users are responsible for ensuring they have the right to download content. This extension is intended for downloading content you own or have permission to download.
+### 3.1 Watch Page URL Patterns
 
-## Get it
+```
+https://thisvid.com/video/<slug>/
+https://thisvid.com/video/<id>/<slug>/
+https://thisvid.com/videos/<slug>/
+```
 
-**Start here:** [https://serp.cc/VDM-thisvid-downloader](https://serp.cc/VDM-thisvid-downloader)
+### 3.2 Embed URL Patterns
+
+```
+https://thisvid.com/embed/<id>
+https://thisvid.com/embed/<id>?autoplay=1
+```
+
+### 3.3 Direct Media and CDN URL Patterns
+
+```
+https://thisvid.com/get_file/<hash>/<id>/<quality>.mp4
+https://thisvid.com/get_file/<hash>/<id>/playlist.m3u8
+https://cdn.thisvid.com/videos/<id>/<file>.mp4
+```
+
+### 3.4 Regex Patterns for URL Extraction
+
+```regex
+thisvid\.com/video/([A-Za-z0-9_-]+)
+thisvid\.com/embed/([0-9]+)
+get_file/[^/]+/([0-9]+)/
+```
+
+### 3.5 Command-line URL Extraction
+
+```bash
+grep -oE "https?://[^'\" ]+\.(mp4|m3u8|m4s|ts)" page.html | sort -u
+grep -oE "thisvid\.com/(video|embed)/[^'\" ]+" page.html | sort -u
+```
+
+---
+
+## 4. Stream Formats and CDN Analysis
+
+### 4.1 Stream Formats
+
+| Format | Extension | Notes |
+|--------|-----------|-------|
+| MP4 (progressive) | .mp4 | Direct file URLs; easiest to download |
+| HLS (adaptive) | .m3u8 | Playlist-based; download via yt-dlp or ffmpeg |
+| fMP4 segments | .m4s | Segmented assets referenced by HLS playlists |
+
+### 4.2 Typical Quality Ladder
+
+| Quality | Typical Resolution | Notes |
+|---------|--------------------|-------|
+| Low | 360p - 480p | Fast preview streams or mobile variants |
+| Medium | 720p | Common default for web playback |
+| High | 1080p+ | Available when source uploads are higher quality |
+
+### 4.3 CDN URL Construction and Query Parameters
+
+- get_file URLs often include a hash segment and short-lived tokens
+- Quality is commonly encoded in the filename or path
+- Referer and Origin headers can affect access
+
+### 4.4 Validation and Inspection Commands
+
+```bash
+ffprobe -hide_banner -show_streams "video.mp4"
+ffprobe -hide_banner -show_format "video.mp4"
+ffprobe -hide_banner -i "playlist.m3u8"
+```
+
+---
+
+## 5. yt-dlp Implementation Strategies
+
+yt-dlp can parse direct MP4 URLs or HLS manifests. Use cookies when content is gated and prefer format selection to control quality.
+
+### 5.1 Basic Usage
+
+```bash
+yt-dlp [OPTIONS] [--] URL [URL...]
+yt-dlp -F "https://example.com/watch/123"
+```
+
+### 5.2 Authentication and Cookies
+
+- Use --cookies-from-browser to re-use a logged-in session if required
+- Pass referer headers with --add-header when the CDN enforces origin checks
+
+### 5.3 Format Selection and Output Templates
+
+```bash
+yt-dlp -f bestvideo+bestaudio/best "URL"
+yt-dlp -o "%(title)s.%(ext)s" "URL"
+yt-dlp --download-archive archive.txt "URL"
+```
+
+### 5.4 Site-Specific Examples
+
+```bash
+yt-dlp "https://thisvid.com/video/<slug>/"
+yt-dlp -F "https://thisvid.com/video/<slug>/"
+yt-dlp -f best "https://thisvid.com/video/<slug>/"
+```
+
+### 5.5 Batch and Archive Mode
+
+```bash
+yt-dlp -a urls.txt --download-archive archive.txt
+yt-dlp --no-overwrites --continue "URL"
+```
+
+### 5.6 Error Handling Patterns
+
+- Use --retries and --fragment-retries for flaky HLS
+- If 403/401 occurs, refresh cookies or add referer headers
+- Use --downloader aria2c for large MP4 files
+
+---
+
+## 6. FFmpeg Processing Techniques
+
+FFmpeg is useful for remuxing HLS playlists into MP4 and validating codecs without re-encoding.
+
+### 6.1 Inspect and Validate Streams
+
+```bash
+ffprobe -hide_banner -i "playlist.m3u8"
+ffmpeg -i "playlist.m3u8" -c copy output.mp4
+```
+
+### 6.2 Common Remux and Repair Patterns
+
+```bash
+ffmpeg -i "playlist.m3u8" -c copy output.mp4
+ffmpeg -i input.mp4 -c copy -movflags +faststart output.mp4
+ffprobe -hide_banner -show_streams output.mp4
+```
+
+---
+
+## 7. Alternative Tools and Backup Methods
+
+### 7.1 Streamlink
+
+```bash
+streamlink "https://thisvid.com/video/<slug>/" best -o output.mp4
+streamlink --loglevel debug "URL" best
+```
+
+### 7.2 aria2c
+
+```bash
+aria2c -o video.mp4 "https://cdn.thisvid.com/videos/<id>/<file>.mp4"
+aria2c -i urls.txt -j 4
+```
+
+### 7.3 gallery-dl
+
+```bash
+gallery-dl "https://thisvid.com/video/<slug>/"
+gallery-dl -g "URL"
+```
+
+### 7.4 Browser DevTools
+
+- Filter Network tab for m3u8, mp4, or get_file requests
+- Check player initialization scripts for video_url or hls_url
+- Copy request URL as cURL to preserve headers
+
+---
+
+## 8. ThisVid API Integration
+
+### 8.1 Known Endpoints
+
+- None documented; rely on page and player data extraction
+
+### 8.2 Example Requests
+
+```
+# No public API calls identified; extract URLs from HTML/player data
+```
+
+### 8.3 Token and Session Handling
+
+- Many KVS deployments do not expose a documented API
+- If a tokenized endpoint exists, capture it from the player payload
+
+---
+
+## 9. Implementation Recommendations
+
+### 9.1 Detection Hierarchy
+
+- Parse inline player config for direct MP4 URLs
+- Fallback to HLS playlist URLs (m3u8)
+- If both are absent, scan Network logs for get_file requests
+
+### 9.2 Site-Specific Notes
+
+- ThisVid often embeds KVS-style flashvars; parse for video_url or hls_url
+- Check for iframe embeds that point to external providers
+
+### 9.3 Storage and Naming Strategy
+
+- Use %(title)s.%(ext)s output templates to preserve context
+- Store archives to prevent duplicate downloads
+
+---
+
+## 10. Troubleshooting and Edge Cases
+
+- HLS playlists may rotate segments; retry on 404
+- Age-gate or consent modals can block player config
+- Some videos are externally embedded and require provider-specific handling
+
+---
+
+## 11. Conclusion
+
+ThisVid uses a KVS-style delivery model with MP4 and HLS variants. A robust downloader should first parse player config for direct media URLs, then fall back to HLS manifests and network inspection. yt-dlp remains the primary extraction tool, with ffmpeg and streamlink as reliable backups.
+
+| Tool | Best Use Case | Notes |
+|------|---------------|-------|
+| yt-dlp | Primary downloader for MP4/HLS | Supports cookies, format selection, retries |
+| ffmpeg | Remuxing and validation | Useful for HLS to MP4 conversion |
+| streamlink | Live/HLS fallback | Streams to file or pipes into ffmpeg |
+| aria2c | Multi-connection HTTP/HLS downloads | Good for large files and retries |
+| gallery-dl | Image-first or gallery-heavy sites | Best for gallery or attachment extraction |
+
+
+---
+
+## Disclaimer and Ethical Use
+
+This document is provided for lawful, personal, or authorized use cases only. Always respect the site terms of service, content creator rights, and applicable laws. If DRM or explicit access controls are present, do not attempt to bypass them; use official downloads or creator-provided access instead.
+
+## Last Updated
+
+December 2025
+
+## Next Review
+
+90 days from last update or when site playback changes are observed.
+
+## Related
+
+- SERP Apps research index (internal)
+- SERP extension downloaders (internal)
+
+</details>
