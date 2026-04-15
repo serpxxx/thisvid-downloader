@@ -121,7 +121,7 @@ Start here: [https://serp.ly/thisvid-downloader](https://serp.ly/thisvid-downloa
 
 ## Installation Instructions
 
-1. Open the latest release page: [GitHub Releases](https://github.com/serpapps/thisvid-downloader/releases/latest)
+1. Open the latest release page: [GitHub Releases](https://github.com/serpxxx/thisvid-downloader/releases/latest)
 2. Download the correct build for your browser.
 3. Install the extension.
 4. Open a ThisVid watch page.
