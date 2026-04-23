@@ -1,4 +1,4 @@
-# ThisVid Downloader (Browser Extension)
+# ThisVid Downloader
 
 > Download ThisVid videos as MP4 files directly from supported pages in your browser.
 
