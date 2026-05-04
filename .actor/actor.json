@@ -5,6 +5,6 @@
   "input": "./INPUT_SCHEMA.json",
   "name": "thisvid-downloader",
   "readme": "../ACTOR.md",
-  "title": "ThisVid Downloader",
+  "title": "ThisVid Video Downloader | How to Download ThisVid Videos",
   "version": "0.0"
 }
