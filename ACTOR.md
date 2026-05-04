@@ -1,4 +1,4 @@
-# ThisVid Downloader
+# ThisVid Video Downloader | How to Download ThisVid Videos
 
 > Download ThisVid videos as MP4 files directly from supported pages in your browser.
 
@@ -6,9 +6,7 @@
 
 Get it here: https://serp.ly/thisvid-downloader
 
-## Links
-
-Get it here: https://serp.ly/thisvid-downloader
+![ThisVid Downloader](https://raw.githubusercontent.com/serpxxx/thisvid-downloader/main/assets/workflow-preview.webp)
 
 ThisVid Downloader is a browser extension for saving supported ThisVid videos without switching to network inspectors, scripts, or external download tools. It detects the media stream used by the player, shows available quality options when present, and exports the final file as MP4 for offline playback.
 
@@ -17,7 +15,6 @@ ThisVid Downloader is a browser extension for saving supported ThisVid videos wi
 - Download MP4 output for easier playback across devices
 - Skip generic downloaders that miss the main stream
 - Keep the workflow simple and browser-based
-
 ## Table of Contents
 
 - [Why ThisVid Downloader](#why-thisvid-downloader)
